@@ -1,5 +1,75 @@
+function clearChart() {
+	d3.select("#chart svg").remove();
+  }
+
 function Task_1() {
+	clearChart();
   // Set the data for the chart
+  var data = [
+    { x: 4, y: 8 },
+    { x: 8, y: 15 },
+    { x: 15, y: 16 },
+    { x: 16, y: 23 },
+    { x: 23, y: 42 },
+    { x: 42, y: 4 }
+  ];
+
+  // Set the dimensions of the canvas
+  var margin = { top: 20, right: 30, bottom: 30, left: 40 },
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+  // Set the ranges of the axes
+  var x = d3.scaleLinear().range([0, width]);
+  var y = d3.scaleLinear().range([height, 0]);
+
+  // Create the SVG canvas
+  var svg = d3
+    .select("#chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Scale the range of the data
+  x.domain([0, d3.max(data, function (d) { return d.x; })]);
+  y.domain([0, d3.max(data, function (d) { return d.y; })]);
+
+  // Add the points to the chart
+  svg
+    .selectAll("circle")
+    .data(data)
+    .enter()
+    .append("circle")
+    .attr("cx", function (d) { return x(d.x); })
+    .attr("cy", function (d) { return y(d.y); })
+    .attr("r", 5);
+
+  // Add the x-axis to the chart
+  svg
+    .append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+
+  // Add the y-axis to the chart
+  svg.append("g").call(d3.axisLeft(y));
+}
+// this is working because of the import in the html file
+// https://socket.io/docs/v4/client-installation/#standalone-build 
+const socket = io()
+socket.on("connect", () => { 
+  console.log("Connected to the webserver.")
+})
+socket.on("disconnect", () => {
+  console.log("Disconnected from the webserver.") 
+})
+socket.on("example_data", (obj) => {
+   console.log(obj)
+})
+function Task_2() { 
+	clearChart();
+    // Set the data for the chart
 var data = [4, 8, 15, 16, 23, 42];
 
 // Set the dimensions of the canvas
@@ -45,20 +115,5 @@ svg.append("g")
 svg.append("g")
 	.call(d3.axisLeft(y));
 
-  
-}
-// this is working because of the import in the html file
-// https://socket.io/docs/v4/client-installation/#standalone-build 
-const socket = io()
-socket.on("connect", () => { 
-  console.log("Connected to the webserver.")
-})
-socket.on("disconnect", () => {
-  console.log("Disconnected from the webserver.") 
-})
-socket.on("example_data", (obj) => {
-   console.log(obj)
-})
-function Task_2() { 
   
 }
