@@ -21,17 +21,17 @@ io.sockets.on("connection", (socket) => {
   };
 
 
-let get_boardgames_data = (parameters) => {
-  console.log(`Received data request with these parameters: ${parameters}`)
-  fs.readFile("./data/boardgames_40.json", "utf8", (err, data) => {
-    if (err) {
-      console.error(err)
-      return
-    }
-    let json_data = JSON.parse(data)
-    socket.emit("boardgames_data", json_data)
-  })
-}
+  let get_boardgames_data = (parameters) => {
+    console.log(`Received data request with these parameters: ${parameters}`)
+    fs.readFile("./data/boardgames_40.json", "utf8", (err, data) => {
+      if (err) {
+        console.error(err)
+        return
+      }
+      let json_data = JSON.parse(data)
+      socket.emit("boardgames_data", json_data)
+    })
+  }
 
   socket.on("disconnect", disconnect);
 

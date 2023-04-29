@@ -3,20 +3,20 @@
 const socket = io()
 var chartType = "unused"
 
-socket.on("connect", () => { 
+socket.on("connect", () => {
   console.log("Connected to the webserver.")
 })
 socket.on("disconnect", () => {
-  console.log("Disconnected from the webserver.") 
+  console.log("Disconnected from the webserver.")
 })
 socket.on("boardgames_data", (obj) => {
   console.log("Received data:", obj)
 
   const preprocessedData = preprocessData(obj);
-  console.log("preprocessedData:", preprocessedData)
-  if (chartType === "scatterplot"){
+
+  if (chartType === "scatterplot") {
     draw_scatterplot_and_regressionline(preprocessedData);
-  } else if (chartType === "timeline"){
+  } else if (chartType === "timeline") {
     draw_year_minage_timeline(preprocessedData);
   } else {
     console.error("Unknown chart type received: ", chartType);
@@ -31,7 +31,6 @@ function clearChart() {
 /////////////////////////////////////////// preprocess the data ////////////////////////////////////////////
 
 function preprocessData(data) {
-  console.log("Data in preprocessData:", data);
   // Check for missing values
   const missingValues = data.some((d) =>
     Object.values(d).some((value) => value === null || value === undefined)
@@ -92,7 +91,7 @@ function preprocessData(data) {
 
 ////////////////////////////////////////////////// Task_1 //////////////////////////////////////////////////
 
-function Task_1() { 
+function Task_1() {
   chartType = "scatterplot"
   socket.emit("get_boardgames_data")
 }
@@ -101,9 +100,9 @@ function draw_scatterplot_and_regressionline(data) {
   clearChart();
 
   // Set the dimensions and margins for the chart
-  var margin = {top: 50, right: 30, bottom: 30, left: 50},
-  width = 960 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
+  var margin = { top: 50, right: 30, bottom: 30, left: 50 },
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
   // Create an SVG container and group (g) element, and apply a transformation for the margins
   var svg = d3.select("#chart")
@@ -121,7 +120,7 @@ function draw_scatterplot_and_regressionline(data) {
     .attr("font-size", "21px")
     .attr("font-weight", "bold")
     .text("Correlation: Rating & Playtime");
-  
+
   // Define the x-axis scale based on average playtime
   const xScale = d3.scaleLinear()
     .domain(d3.extent(data, d => d.avg_playtime))
@@ -162,46 +161,46 @@ function draw_scatterplot_and_regressionline(data) {
     .call(yAxis)
     .append('text')
     .attr('transform', 'rotate(-90)')
-    .attr('y', -margin.left / 1.5 )
+    .attr('y', -margin.left / 1.5)
     .attr('x', -height / 2)
     .attr('fill', 'black')
     .attr("font-size", "16px")
     .text('Rating');
 
-// Calculate the coefficients for the regression line
-const regressionResult = ss.linearRegression(data.map(d => [d.avg_playtime, d.avg_rating]));
+  // Calculate the coefficients for the regression line
+  const regressionResult = ss.linearRegression(data.map(d => [d.avg_playtime, d.avg_rating]));
 
-// Create a function to calculate the y-coordinate of the regression line for any given x-coordinate
-const regressionLine = x => (regressionResult.m * x) + regressionResult.b;
+  // Create a function to calculate the y-coordinate of the regression line for any given x-coordinate
+  const regressionLine = x => (regressionResult.m * x) + regressionResult.b;
 
-// Create an array of x-coordinates for the regression line
-const xCoords = d3.range(
-  d3.min(data, d => d.avg_playtime),
-  d3.max(data, d => d.avg_playtime),
-  (d3.max(data, d => d.avg_playtime) - d3.min(data, d => d.avg_playtime)) / 200
-);
+  // Create an array of x-coordinates for the regression line
+  const xCoords = d3.range(
+    d3.min(data, d => d.avg_playtime),
+    d3.max(data, d => d.avg_playtime),
+    (d3.max(data, d => d.avg_playtime) - d3.min(data, d => d.avg_playtime)) / 200
+  );
 
-// Calculate the corresponding y-coordinates
-const lineData = xCoords.map(x => ({ x: x, y: regressionLine(x) }));
+  // Calculate the corresponding y-coordinates
+  const lineData = xCoords.map(x => ({ x: x, y: regressionLine(x) }));
 
-// Define a line generator
-const lineGenerator = d3.line()
-  .x(d => xScale(d.x))
-  .y(d => yScale(d.y));
+  // Define a line generator
+  const lineGenerator = d3.line()
+    .x(d => xScale(d.x))
+    .y(d => yScale(d.y));
 
-// Draw the regression line on the scatterplot
-svg.append("path")
-  .datum(lineData)
-  .attr("fill", "none")
-  .attr("stroke", "red")
-  .attr("stroke-width", 1.5)
-  .attr("stroke-dasharray", "5,5")
-  .attr("d", lineGenerator);
+  // Draw the regression line on the scatterplot
+  svg.append("path")
+    .datum(lineData)
+    .attr("fill", "none")
+    .attr("stroke", "red")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "5,5")
+    .attr("d", lineGenerator);
 
 }
 ////////////////////////////////////////////////// Task_2 //////////////////////////////////////////////////
 
-function Task_2() { 
+function Task_2() {
   chartType = "timeline"
   socket.emit("get_boardgames_data")
 }
@@ -210,9 +209,9 @@ function draw_year_minage_timeline(data) {
   clearChart();
 
   // Set the dimensions and margins for the chart
-  var margin = {top: 50, right: 30, bottom: 30, left: 50},
-  width = 960 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
+  var margin = { top: 50, right: 30, bottom: 30, left: 50 },
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
   // Create an SVG container and group (g) element, and apply a transformation for the margins
   var svg = d3.select("#chart")
