@@ -168,16 +168,19 @@ function draw_scatterplot_and_regressionline(data) {
     .text('Rating');
 
   // Calculate the coefficients for the regression line
-  const regressionResult = ss.linearRegression(data.map(d => [d.avg_playtime, d.avg_rating]));
+  // const polynomialOrder = 2;
+  // const regressionResult = regression.polynomial(data.map(d => [d.avg_playtime, d.avg_rating]), { order: polynomialOrder });
+  const regressionResult = regression.logarithmic(data.map(d => [d.avg_playtime, d.avg_rating]));
 
   // Create a function to calculate the y-coordinate of the regression line for any given x-coordinate
-  const regressionLine = x => (regressionResult.m * x) + regressionResult.b;
+  const regressionLine = x => regressionResult.predict(x)[1];
 
   // Create an array of x-coordinates for the regression line
+  const numPoints = 25
   const xCoords = d3.range(
     d3.min(data, d => d.avg_playtime),
     d3.max(data, d => d.avg_playtime),
-    (d3.max(data, d => d.avg_playtime) - d3.min(data, d => d.avg_playtime)) / 200
+    (d3.max(data, d => d.avg_playtime) - d3.min(data, d => d.avg_playtime)) / numPoints
   );
 
   // Calculate the corresponding y-coordinates
@@ -196,6 +199,8 @@ function draw_scatterplot_and_regressionline(data) {
     .attr("stroke-width", 1.5)
     .attr("stroke-dasharray", "5,5")
     .attr("d", lineGenerator);
+
+  console.log('Coefficients:', regressionResult.equation);
 
 }
 ////////////////////////////////////////////////// Task_2 //////////////////////////////////////////////////

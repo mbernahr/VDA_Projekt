@@ -39,7 +39,6 @@ body {
   grid-area: logo;
 
   padding: 5px;
-  cursor: pointer;
 }
 
 .content {
