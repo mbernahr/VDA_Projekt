@@ -44,6 +44,9 @@ body {
 
 .content {
   grid-area: content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Styling the buttons */
