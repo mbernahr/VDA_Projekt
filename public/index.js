@@ -246,6 +246,15 @@ function draw_year_minage_timeline(data) {
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+  // Add a title to the chart
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", -margin.top / 2)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "21px")
+    .attr("font-weight", "bold")
+    .text("Average Minimum Playerage per Year");
+
   // Define the x-axis scale based on the year
   const xScale = d3.scaleLinear()
     .domain([d3.min(data, d => d.year), d3.max(data, d => d.year)])
@@ -279,10 +288,10 @@ function draw_year_minage_timeline(data) {
     .append('text')
     .attr('transform', 'rotate(-90)')
     .attr('y', -margin.left / 1.5)
-    .attr('x', -height / 2)
+    .attr('x', -height / 3)
     .attr('fill', 'black')
     .attr("font-size", "16px")
-    .text('Minimum Age');
+    .text('Average Minimum Age');
 
   // Create a line generator function
   const lineGenerator = d3.line()
