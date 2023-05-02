@@ -68,6 +68,26 @@ function preprocessData(data) {
     d.avg_playtime = (d.minplaytime + d.maxplaytime) / 2 > 300 ? mean_avg_playtime : (d.minplaytime + d.maxplaytime) / 2;
   });
 
+  // Group and calculate the average "minage" by year and then add this as a new property to every game object in "df_scatter"
+  const groupByYear = data.reduce((groups, item) => {
+    const year = item.year;
+    if (!groups[year]) {
+      groups[year] = [];
+    }
+    groups[year].push(item.minage);
+    return groups;
+  }, {});
+  
+  const avgMinageByYear = Object.keys(groupByYear).map(year => {
+    const minages = groupByYear[year];
+    const avgMinage = minages.reduce((total, minage) => total + minage, 0) / minages.length;
+    return {[year]: avgMinage};
+  }).reduce((acc, cur) => ({...acc, ...cur}), {});
+
+  df_scatter.forEach((d) => {
+    d.avg_minage = avgMinageByYear[d.year];
+  });
+
   // Extract the 'rating' column into a separate Series
   const pd_avg_rating = df_scatter.map((d) => d.rating.rating);
 
@@ -267,7 +287,7 @@ function draw_year_minage_timeline(data) {
   // Create a line generator function
   const lineGenerator = d3.line()
     .x(d => xScale(d.year))
-    .y(d => yScale(d.minage));
+    .y(d => yScale(d.avg_minage));
 
   // Sort the data by year to ensure the line connects points in the correct order
   data.sort((a, b) => a.year - b.year);
