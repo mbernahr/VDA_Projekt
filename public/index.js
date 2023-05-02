@@ -307,4 +307,14 @@ function draw_year_minage_timeline(data) {
     .attr('fill', 'none')
     .attr('stroke', 'steelblue')
     .attr('stroke-width', 2);
+
+  // Create and position circle elements for each data point
+  svg.selectAll('circle')
+    .data(data)
+    .enter()
+    .append('circle')
+    .attr('cx', d => xScale(d.year))
+    .attr('cy', d => yScale(d.avg_minage))
+    .attr('r', 4)
+    .attr('fill', 'black');
 }
