@@ -32,8 +32,10 @@ function clearChart() {
 
 var colorblindMode = false;
 
+// Original colors
 var colorCircleFill = "steelblue"
-var colorCircleStroke = "black"
+var colorCircleStroke = "steelblue"
+var colorRegressionLine = "red";
 
 // Create a colorblind-friendly color scale
 let colorScale = d3.scaleOrdinal(d3.schemeBlues[9]);
@@ -48,11 +50,16 @@ function toggleColorblindMode() {
                 return colorScale(i);
             })
             .attr("stroke", "blue");
+        // Change regression line color
+        d3.selectAll(".regression-line")
+            .attr("stroke", "orange");
     } else {
         // Change colors back to the original colors
         d3.selectAll("circle")
             .attr("fill", colorCircleFill)
             .attr("stroke", colorCircleStroke);
+        d3.selectAll(".regression-line")
+            .attr("stroke", colorRegressionLine);
     }
 }
 
@@ -122,6 +129,14 @@ function preprocessData(data) {
   // Add the pd_avg_rating array as a new property to the df_scatter array
   df_scatter.forEach((d, i) => {
     d.avg_rating = pd_avg_rating[i];
+  });
+
+  // Extract the 'number of ratings' column into a seperate Series
+  const pd_num_of_reviews = df_scatter.map((d) => d.rating.num_of_reviews)
+
+  // Add the pd_num_of_reviews array as a new property to the df_scatter array
+  df_scatter.forEach((d, i) => {
+    d.num_of_reviews = pd_num_of_reviews[i];
   });
 
   // Drop the original minplaytime and maxplaytime properties
@@ -270,7 +285,8 @@ function draw_scatterplot_and_regressionline(data) {
   svg.append("path")
     .datum(lineData)
     .attr("fill", "none")
-    .attr("stroke", "red")
+    .attr("class", "regression-line")
+    .attr("stroke", colorRegressionLine)
     .attr("stroke-width", 1.5)
     .attr("stroke-dasharray", "5,5")
     .attr("d", lineGenerator);
