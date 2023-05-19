@@ -151,15 +151,41 @@ function draw_scatterplot_and_regressionline(data) {
     .domain(d3.extent(data, d => d.avg_rating))
     .range([height, 0]);
 
+  // Define tooltip div
+  var div = d3.select("body").append("div")    
+  .attr("class", "tooltip")                
+  .style("opacity", 0);
+
   // Create and position circle elements for each data point
-  svg.selectAll('circle')
-    .data(data)
-    .enter()
-    .append('circle')
-    .attr('cx', d => xScale(d.avg_playtime))
-    .attr('cy', d => yScale(d.avg_rating))
-    .attr('r', 4)
-    .attr('fill', 'steelblue');
+  var circles = svg.selectAll('circle')
+  .data(data)
+  .enter()
+  .append('circle')
+  .attr('cx', d => xScale(d.avg_playtime))
+  .attr('cy', d => yScale(d.avg_rating))
+  .attr('r', 5)
+  .attr('fill', 'steelblue')
+  .attr("stroke", "steelblue")
+  .attr("stroke-width", 1.5)
+  .on('mouseover', function (event, d) {
+      d3.select(this).transition()
+          .duration('100')
+          .attr("r", 7);
+      div.transition()
+          .duration(100)
+          .style("opacity", 1);
+      div.html("Playtime: " + d3.format(".2f")(d.avg_playtime) + ", Rating: " + d3.format(".2f")(d.avg_rating))
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 15) + "px");
+  })
+  .on('mouseout', function (event, d) {
+      d3.select(this).transition()
+          .duration('200')
+          .attr("r", 5);
+      div.transition()
+          .duration('200')
+          .style("opacity", 0);
+  });
 
   // Create and position the x-axis
   const xAxis = d3.axisBottom(xScale);
@@ -308,13 +334,39 @@ function draw_year_minage_timeline(data) {
     .attr('stroke', 'steelblue')
     .attr('stroke-width', 2);
 
+  // Define tooltip div
+  var div = d3.select("body").append("div")    
+  .attr("class", "tooltip")                
+  .style("opacity", 0);
+
   // Create and position circle elements for each data point
-  svg.selectAll('circle')
-    .data(data)
-    .enter()
-    .append('circle')
-    .attr('cx', d => xScale(d.year))
-    .attr('cy', d => yScale(d.avg_minage))
-    .attr('r', 4)
-    .attr('fill', 'black');
+  var circles = svg.selectAll('circle')
+  .data(data)
+  .enter()
+  .append('circle')
+  .attr('cx', d => xScale(d.year))
+  .attr('cy', d => yScale(d.avg_minage))
+  .attr('r', 5)
+  .attr('fill', 'steelblue')
+  .attr("stroke", "black")
+  .attr("stroke-width", 1.5)
+  .on('mouseover', function (event, d) {
+      d3.select(this).transition()
+          .duration('100')
+          .attr("r", 7);
+      div.transition()
+          .duration(100)
+          .style("opacity", 1);
+      div.html("Year: " + d3.format(".2f")(d.year) + ", Average min. Age: " + d3.format(".2f")(d.avg_minage))
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 15) + "px");
+  })
+  .on('mouseout', function (event, d) {
+      d3.select(this).transition()
+          .duration('200')
+          .attr("r", 5);
+      div.transition()
+          .duration('200')
+          .style("opacity", 0);
+  });
 }
