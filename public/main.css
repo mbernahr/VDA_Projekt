@@ -75,6 +75,12 @@ body {
   border-color: white;
 }
 
+.position_right {
+  height: 50px;
+  position: absolute;
+  right: 0;
+}
+
 div.tooltip {
   position: absolute;
   text-align: center;
@@ -86,3 +92,4 @@ div.tooltip {
   pointer-events: none;
   font-size: .7rem;
 }
+

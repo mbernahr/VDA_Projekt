@@ -28,6 +28,34 @@ function clearChart() {
   d3.select("#chart svg").remove();
 }
 
+///////////////////////////////////////////// colorblind Modus /////////////////////////////////////////////
+
+var colorblindMode = false;
+
+var colorCircleFill = "steelblue"
+var colorCircleStroke = "black"
+
+// Create a colorblind-friendly color scale
+let colorScale = d3.scaleOrdinal(d3.schemeBlues[9]);
+
+function toggleColorblindMode() {
+    colorblindMode = !colorblindMode;
+    if (colorblindMode) {
+        // Change colors to be colorblind friendly
+        d3.selectAll("circle")
+            .attr("fill", function(d, i) {
+                // Use the color scale to assign colors
+                return colorScale(i);
+            })
+            .attr("stroke", "blue");
+    } else {
+        // Change colors back to the original colors
+        d3.selectAll("circle")
+            .attr("fill", colorCircleFill)
+            .attr("stroke", colorCircleStroke);
+    }
+}
+
 /////////////////////////////////////////// preprocess the data ////////////////////////////////////////////
 
 function preprocessData(data) {
@@ -118,6 +146,7 @@ function Task_1() {
 
 function draw_scatterplot_and_regressionline(data) {
   clearChart();
+  colorblindMode = false;
 
   // Set the dimensions and margins for the chart
   var margin = { top: 50, right: 30, bottom: 30, left: 50 },
@@ -164,8 +193,8 @@ function draw_scatterplot_and_regressionline(data) {
   .attr('cx', d => xScale(d.avg_playtime))
   .attr('cy', d => yScale(d.avg_rating))
   .attr('r', 5)
-  .attr('fill', 'steelblue')
-  .attr("stroke", "steelblue")
+  .attr('fill', colorCircleFill)
+  .attr("stroke", colorCircleStroke)
   .attr("stroke-width", 1.5)
   .on('mouseover', function (event, d) {
       d3.select(this).transition()
@@ -258,6 +287,7 @@ function Task_2() {
 
 function draw_year_minage_timeline(data) {
   clearChart();
+  colorblindMode = false;
 
   // Set the dimensions and margins for the chart
   var margin = { top: 50, right: 30, bottom: 30, left: 50 },
@@ -347,8 +377,8 @@ function draw_year_minage_timeline(data) {
   .attr('cx', d => xScale(d.year))
   .attr('cy', d => yScale(d.avg_minage))
   .attr('r', 5)
-  .attr('fill', 'steelblue')
-  .attr("stroke", "black")
+  .attr('fill', colorCircleFill)
+  .attr("stroke", colorCircleStroke)
   .attr("stroke-width", 1.5)
   .on('mouseover', function (event, d) {
       d3.select(this).transition()
@@ -357,7 +387,7 @@ function draw_year_minage_timeline(data) {
       div.transition()
           .duration(100)
           .style("opacity", 1);
-      div.html("Year: " + d3.format(".2f")(d.year) + ", Average min. Age: " + d3.format(".2f")(d.avg_minage))
+      div.html("Year: " + (d.year) + ", avg. min. Age: " + (d.avg_minage))
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 15) + "px");
   })
