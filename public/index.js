@@ -221,17 +221,24 @@ function draw_scatterplot_and_regressionline(data) {
     .attr("stroke-width", 1.5)
     // Add hover effect
     .on('mouseover', function (event, d) {
+      // Change the size of the data points bigger
       d3.select(this).transition()
         .duration('100')
         .attr("r", 7);
+      // Showing value on hover
       div.transition()
         .duration(100)
         .style("opacity", 1);
-      div.html("Titel: " + d.title + "<br>Playtime: " + d3.format(".2f")(d.avg_playtime) + ", Rating: " + d3.format(".2f")(d.avg_rating))
+      div.html(
+        "Titel: " + d.title +
+        "<br>Playtime: " + d3.format(".2f")(d.avg_playtime) +
+        ", Rating: " + d3.format(".2f")(d.avg_rating)
+      )
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 15) + "px");
     })
     .on('mouseout', function (event, d) {
+      // Change the size of the data points smaller
       d3.select(this).transition()
         .duration('200')
         .attr("r", 5);
@@ -407,9 +414,11 @@ function draw_year_minage_timeline(data) {
     .attr("stroke-width", 1.5)
     // Add hover effect
     .on('mouseover', function (event, d) {
+      // Change the size of the data points bigger
       d3.select(this).transition()
         .duration('100')
         .attr("r", 7);
+      // Showing value on hover
       div.transition()
         .duration(100)
         .style("opacity", 1);
@@ -418,6 +427,7 @@ function draw_year_minage_timeline(data) {
         .style("top", (event.pageY - 15) + "px");
     })
     .on('mouseout', function (event, d) {
+      // Change the size of the data points smaller
       d3.select(this).transition()
         .duration('200')
         .attr("r", 5);
@@ -438,7 +448,7 @@ function draw_lda(data) {
   clearChart();
   colorblindMode = false;
 
-
+  ///////////// preprocess for LDA //////////// 
   // Create a array with the most dominant game category from each game
   var classCounts = {};
   for (let game of data) {
@@ -492,6 +502,7 @@ function draw_lda(data) {
 
   console.log(result.to2dArray)
 
+  //////////////// plott the LDA /////////////// 
   // Set the dimensions and margins for the chart
   var margin = { top: 50, right: 30, bottom: 30, left: 50 },
     width = 960 - margin.left - margin.right,
@@ -519,7 +530,7 @@ function draw_lda(data) {
   var color = d3.scaleOrdinal()
     //.domain([0, numColor])
     //.range(d3.quantize(t => d3.interpolateRainbow(t), numColor));
-    // Add self created array with colors because they are better to disginguish
+    /////// Add self created array with colors because they are better to disginguish
     .domain(Array.from(new Set(highestOrderedCategories)))
     .range(["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896",
       "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f",
@@ -551,7 +562,7 @@ function draw_lda(data) {
     .data(result)
     .enter().append("circle")
     .attr("class", "dot")
-    .attr("r", 3.5)
+    .attr("r", 5)
     .attr("cx", function (d, i) { return xScale(d[0]); })
     .attr("cy", function (d, i) { return yScale(d[1]); })
     .style("fill", function (_, i) { return color(highestOrderedCategories[i]); });
@@ -561,7 +572,7 @@ function draw_lda(data) {
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-  // Get unique categories for the legend
+  // Get unique categories for the legend by using Set
   let uniqueCategories = Array.from(new Set(highestOrderedCategories));
 
   // Legend
@@ -574,25 +585,28 @@ function draw_lda(data) {
   // Draw legend colored rectangles
   legend.append("rect")
     .attr("x", 0)
-    .attr("width", 24)
-    .attr("height", 24)
+    .attr("width", 18)
+    .attr("height", 18)
     .style("fill", color);
 
   // Draw legend text
   legend.append("text")
-    .attr("x", 28)
-    .attr("y", 12)
+    .attr("x", 24)
+    .attr("y", 9)
     .attr("dy", ".35em")
     .style("text-anchor", "start")
     .text(function (d) { return d; });
 
-  const results = result.to2dArray
 
   // Add hover effect
+  /////// Helper variable to find the index
+  const results = result.to2dArray
   circles
     .on('mouseover', function (event, d) {
+      // Change the size of the data points bigger
       d3.select(this)
         .attr("r", 7);
+      // Showing value on hover
       div.transition()
         .duration(100)
         .style("opacity", 1);
@@ -605,8 +619,9 @@ function draw_lda(data) {
         .style("top", (event.pageY - 15) + "px");
     })
     .on('mouseout', function (event, d) {
+      // Change the size of the data points smaller
       d3.select(this)
-        .attr("r", 3.5);
+        .attr("r", 5);
       div.transition()
         .duration('200')
         .style("opacity", 0);
