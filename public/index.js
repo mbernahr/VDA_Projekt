@@ -515,8 +515,15 @@ function draw_lda(data) {
     .text("LDA dimensionality reduction ");
 
   // Create color scale
-  var color = d3.scaleOrdinal(d3.schemeCategory10);
-  console.log("colors: ", color)
+  var numColor = Array.from(new Set(highestOrderedCategories)).length
+  var color = d3.scaleOrdinal()
+    //.domain([0, numColor])
+    //.range(d3.quantize(t => d3.interpolateRainbow(t), numColor));
+    // Add self created array with colors because they are better to disginguish
+    .domain(Array.from(new Set(highestOrderedCategories)))
+    .range(["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896",
+      "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f",
+      "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5", "#6b6ecf", "#b5cf6b"]);
 
   // Create scales for the axes
   var xScale = d3.scaleLinear()
@@ -548,7 +555,6 @@ function draw_lda(data) {
     .attr("cx", function (d, i) { return xScale(d[0]); })
     .attr("cy", function (d, i) { return yScale(d[1]); })
     .style("fill", function (_, i) { return color(highestOrderedCategories[i]); });
-
 
   // Define tooltip div
   var div = d3.select("body").append("div")
