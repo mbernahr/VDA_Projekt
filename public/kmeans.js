@@ -89,8 +89,26 @@ function assign_datapoints_to_centroids(
   centroids,
   distance_function
 ) {
-  // TODO
-  return datapoints
+  return datapoints.map(datapoint => {
+    // Initialize variables for tracking the nearest centroid and its distance
+    let nearestCentroid = null;
+    let nearestDistance = Infinity;
+
+    // Iterate over each centroid
+    centroids.forEach(centroid => {
+      // Calculate the distance between the data point and the current centroid
+      const distance = distance_function(datapoint, centroid);
+
+      // Check if this centroid is closer than the previous nearest centroid
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestCentroid = centroid;
+      }
+    });
+
+    // Assign the centroid index to the data point
+    return { ...datapoint, centroid_index: nearestCentroid.centroid_index };
+  });
 }
 
 /**
@@ -102,9 +120,20 @@ function assign_datapoints_to_centroids(
  * @returns {{[{ x, y }, ... ], Boolean}} - centroids with new positions, and true of at least one centroid position changed
  */
 function calculate_new_centroids(datapoints, centroids, measure_function) {
-  let centroids_changed = false
-  // TODO
-  return { centroids, centroids_changed }
+  let centroids_changed = false;
+
+  const newCentroids = centroids.map( centroid => {
+    const centroidPoints = datapoints.filter(point => point.centroid_index === 1);
+    const newCoord = measure_function(centroidPoints);
+
+    if (newCoord !== centroid) {
+      centroids_changed = true;
+      return newCoord;
+    }
+    return centroid;
+  });
+  
+  return { newCentroids, centroids_changed }
 }
 
 /**
@@ -115,7 +144,24 @@ function calculate_new_centroids(datapoints, centroids, measure_function) {
  * @returns {[{ x, y }, ...]} - generated centroids
  */
 function get_random_centroids(datapoints, k) {
-  let centroids = []
-  // TODO
-  return centroids
+  let centroids = [];
+  
+  // Get the boundaries of x and y coordinates
+  const xValues = datapoints.map(point => point.x);
+  const yValues = datapoints.map(point => point.y);
+  const minX = Math.min(...xValues);
+  const maxX = Math.max(...xValues);
+  const minY = Math.min(...yValues);
+  const maxY = Math.max(...yValues);
+  
+  // Generate k random centroids within the boundaries
+  for (let i = 0; i < k; i++) {
+    const centroid = {
+      x: Math.random() * (maxX - minX) + minX,
+      y: Math.random() * (maxY - minY) + minY
+    };
+    centroids.push(centroid);
+  }
+  
+  return centroids;
 }
