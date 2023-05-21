@@ -195,13 +195,14 @@ function draw_scatterplot_and_regressionline(data) {
 
   // Define the x-axis scale based on average playtime
   const xScale = d3.scaleLinear()
-    .domain(d3.extent(data, d => d.avg_playtime))
+    .domain([d3.min(data, d => d.avg_playtime) * 0.95, d3.max(data, d => d.avg_playtime) * 1.05])
     .range([0, width]);
 
   // Define the y-axis scale based on average rating
   const yScale = d3.scaleLinear()
-    .domain(d3.extent(data, d => d.avg_rating))
+    .domain([d3.min(data, d => d.avg_rating) * 0.95, d3.max(data, d => d.avg_rating) * 1.05])
     .range([height, 0]);
+
 
   // Define tooltip div
   var div = d3.select("body").append("div")
@@ -537,13 +538,19 @@ function draw_lda(data) {
       "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5", "#6b6ecf", "#b5cf6b"]);
 
   // Create scales for the axes
+  /////// Get the min and max of the values, calculate the range and add 10% padding
+  var xExtent = d3.extent(result, d => d[0]);
+  var xRange = xExtent[1] - xExtent[0];
   var xScale = d3.scaleLinear()
-    .domain([d3.min(result, d => d[0]), d3.max(result, d => d[0])])
+    .domain([xExtent[0] - xRange * 0.1, xExtent[1] + xRange * 0.1])
     .range([0, width]);
 
+  var yExtent = d3.extent(result, d => d[1]);
+  var yRange = yExtent[1] - yExtent[0];
   var yScale = d3.scaleLinear()
-    .domain([d3.min(result, d => d[1]), d3.max(result, d => d[1])])
+    .domain([yExtent[0] - yRange * 0.1, yExtent[1] + yRange * 0.1])
     .range([height, 0]);
+
 
   // Create axes
   var xAxis = d3.axisBottom(xScale);
