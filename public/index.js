@@ -482,7 +482,7 @@ function draw_lda(data) {
   for (let game of data) {
     var tmp = [];
     tmp.push(game.avg_rating)
-    //tmp.push(game.num_of_reviews)
+    tmp.push(game.num_of_reviews)
     tmp.push(game.avg_playtime)
     tmp.push(game.minage)
     tmp.push(game.minplayers)
@@ -504,11 +504,12 @@ function draw_lda(data) {
     if (!topThreeCat.includes(category)) {
       highestOrderedCategories.splice(i, 1);
       numberData.splice(i, 1);
+      title.splice(i, 1);
     }
   }
 
 
-  console.log("highestOrderedCategories Post:", Array.from(new Set(highestOrderedCategories)))
+  console.log("highestOrderedCategories Post:", highestOrderedCategories)
   console.log("numberData Post:", numberData)
 
 
@@ -545,14 +546,14 @@ function draw_lda(data) {
 
   // Create color scale
   var numColor = Array.from(new Set(highestOrderedCategories)).length
-  var color = d3.scaleOrdinal()
+  var color = d3.scaleOrdinal(d3.schemeCategory10)
     //.domain([0, numColor])
     //.range(d3.quantize(t => d3.interpolateRainbow(t), numColor));
     /////// Add self created array with colors because they are better to disginguish
-    .domain(Array.from(new Set(highestOrderedCategories)))
-    .range(["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896",
-      "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f",
-      "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5", "#6b6ecf", "#b5cf6b"]);
+    //.domain(Array.from(new Set(highestOrderedCategories)))
+    //.range(["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896",
+    //  "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f",
+    //  "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5", "#6b6ecf", "#b5cf6b"]);
 
   // Create scales for the axes
   /////// Get the min and max of the values, calculate the range and add 10% padding
