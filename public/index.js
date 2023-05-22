@@ -482,7 +482,7 @@ function draw_lda(data) {
   for (let game of data) {
     var tmp = [];
     tmp.push(game.avg_rating)
-    tmp.push(game.num_of_reviews)
+    //tmp.push(game.num_of_reviews)
     tmp.push(game.avg_playtime)
     tmp.push(game.minage)
     tmp.push(game.minplayers)
@@ -494,6 +494,23 @@ function draw_lda(data) {
   }
 
   console.log("numberData:", numberData)
+
+  // Filter data to contain only games belonging to the top 3 categories
+  const topThreeCat = ["Fantasy", "Economic", "Science Fiction"];
+
+  for (let i = highestOrderedCategories.length - 1; i >= 0; i--) {
+    const category = highestOrderedCategories[i];
+    
+    if (!topThreeCat.includes(category)) {
+      highestOrderedCategories.splice(i, 1);
+      numberData.splice(i, 1);
+    }
+  }
+
+
+  console.log("highestOrderedCategories Post:", Array.from(new Set(highestOrderedCategories)))
+  console.log("numberData Post:", numberData)
+
 
   // LDA wit 2 dimensions
   const X = druid.Matrix.from(numberData);
