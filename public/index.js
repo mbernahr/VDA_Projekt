@@ -20,6 +20,8 @@ socket.on("boardgames_data", (obj) => {
     draw_year_minage_timeline(preprocessedData);
   } else if (chartType === "lda") {
     draw_lda(preprocessedData);
+  } else if (chartType === "cluster") {
+    draw_cluster(preprocessedData);
   } else {
     console.error("Unknown chart type received: ", chartType);
   }
@@ -652,4 +654,187 @@ function draw_lda(data) {
         .style("opacity", 0);
     });
 
+}
+
+////////////////////////////////////////////////// Task_4 //////////////////////////////////////////////////
+
+function Task_4() {
+  chartType = "cluster"
+  socket.emit("get_boardgames_data")
+}
+
+function standardizeData(data) {
+  // Calculate the mean for each feature
+  const mean = {
+    x: 0,
+    y: 0
+  };
+
+  for (let i = 0; i < data.length; i++) {
+    mean.x += data[i].x;
+    mean.y += data[i].y;
+  }
+
+  mean.x /= data.length;
+  mean.y /= data.length;
+
+  // Calculate the standard deviation for each feature
+  const stdDev = {
+    x: 0,
+    y: 0
+  };
+
+  for (let i = 0; i < data.length; i++) {
+    stdDev.x += Math.pow(data[i].x - mean.x, 2);
+    stdDev.y += Math.pow(data[i].y - mean.y, 2);
+  }
+
+  stdDev.x = Math.sqrt(stdDev.x / data.length);
+  stdDev.y = Math.sqrt(stdDev.y / data.length);
+
+  // Standardize the data
+  const standardizedData = [];
+
+  for (let i = 0; i < data.length; i++) {
+    const standardizedValue = {
+      x: (data[i].x - mean.x) / stdDev.x,
+      y: (data[i].y - mean.y) / stdDev.y
+    };
+
+    standardizedData.push(standardizedValue);
+  }
+
+  return standardizedData;
+}
+
+function draw_cluster(data) {
+
+  clearChart();
+  colorblindMode = false;
+
+  let cluster_data = data.map((game) => ({"x": game.avg_rating, "y": game.num_of_reviews}));
+  cluster_data = standardizeData(cluster_data);
+  const result = kmeans(cluster_data, 4, mean, euclid);
+  cluster_data = result.datapoints;
+  const centroids = result.centroids;
+
+  data = data.map((game, index) =>  ({ ...game, ...cluster_data[index] }));
+
+  // Set the dimensions and margins for the chart
+  var margin = { top: 50, right: 30, bottom: 30, left: 50 },
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+  // Create an SVG container and group (g) element, and apply a transformation for the margins
+  var svg = d3.select("#chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Add a title to the chart
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", -margin.top / 2)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "21px")
+    .attr("font-weight", "bold")
+    .text("Clustering: Average Rating & Number of Reviews");
+
+  // Define the x-axis scale based on average playtime
+  const xScale = d3.scaleLinear()
+    .domain([d3.min(data, d => d.x) - (Math.abs(d3.min(data, d => d.x)*0.05)), d3.max(data, d => d.x) * 1.05])
+    .range([0, width]);
+
+  // Define the y-axis scale based on average rating
+  const yScale = d3.scaleLinear()
+  .domain([d3.min(data, d => d.y) - (Math.abs(d3.min(data, d => d.y)*0.05)), d3.max(data, d => d.y) * 1.05])
+    .range([height, 0]);
+
+
+  // Define tooltip div
+  var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  var color = d3.scaleOrdinal(d3.schemeCategory10)
+
+  // Create and position circle elements for each data point
+  var circles = svg.selectAll('circle')
+    .data(data)
+    .enter()
+    .append('circle')
+    .attr('cx', d => xScale(d.x))
+    .attr('cy', d => yScale(d.y))
+    .attr('r', 5)
+    .attr('fill', colorCircleFill)
+    .attr("stroke", colorCircleStroke)
+    .attr("stroke-width", 1.5)
+    .style("fill", function (d, i) { return color(d.centroid_index); })
+    // Add hover effect
+    .on('mouseover', function (event, d) {
+      // Change the size of the data points bigger
+      d3.select(this).transition()
+        .duration('100')
+        .attr("r", 7);
+      // Showing value on hover
+      div.transition()
+        .duration(100)
+        .style("opacity", 1);
+      div.html(
+        "Titel: " + d.title +
+        "<br>Average Rating: " + d3.format(".2f")(d.avg_rating) +
+        ", Number of Reviews: " + d3.format(".2f")(d.num_of_reviews)
+      )
+        .style("left", (event.pageX + 10) + "px")
+        .style("top", (event.pageY - 15) + "px");
+    })
+    .on('mouseout', function (event, d) {
+      // Change the size of the data points smaller
+      d3.select(this).transition()
+        .duration('200')
+        .attr("r", 5);
+      div.transition()
+        .duration('200')
+        .style("opacity", 0);
+    });
+
+    var centroid_circles = svg.selectAll(".dot")
+    .data(centroids)
+    .enter()
+    .append("circle")
+    .attr("class", "dot")
+    .attr("r", 5)
+    .attr("cx", d => xScale(d.x))
+    .attr("cy", d => yScale(d.y))
+    .style("fill", "#000000");
+
+
+
+  // Create and position the x-axis
+  const xAxis = d3.axisBottom(xScale);
+  const yAxis = d3.axisLeft(yScale);
+
+  // Add the x-axis and label to the chart
+  svg.append('g')
+    .attr('transform', `translate(0, ${height})`)
+    .call(xAxis)
+    .append('text')
+    .attr('x', width / 2)
+    .attr('y', margin.bottom + 10)
+    .attr('fill', 'black')
+    .attr("font-size", "16px")
+    .text('Average Rating');
+
+  // Add the y-axis and label to the chart
+  svg.append('g')
+    .call(yAxis)
+    .append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', -margin.left / 1.5)
+    .attr('x', -height / 2)
+    .attr('fill', 'black')
+    .attr("font-size", "16px")
+    .text('Number of Reviews');
 }

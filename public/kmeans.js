@@ -24,7 +24,7 @@ function median(datapoints) {
   const median_helper = (arr) => {
     const sorted = arr.sort()
     const len = arr.length;
-    const middleIndex = Math.floor(length / 2);
+    const middleIndex = Math.floor(len / 2);
 
     if (len % 2 === 0) {
       return (sorted[middleIndex - 1] + sorted[middleIndex]) / 2;
@@ -36,7 +36,7 @@ function median(datapoints) {
   const xCoords = datapoints.map(obj => obj.x);
   const yCoords = datapoints.map(obj => obj.y);
   
-  return { x: median_helper(xCoords), y: median_helper(yCoords) }
+  return { x: median_helper(xCoords), y: median_helper(yCoords) };
 }
 
 /**
@@ -107,7 +107,7 @@ function assign_datapoints_to_centroids(
     });
 
     // Assign the centroid index to the data point
-    return { ...datapoint, centroid_index: nearestCentroid.centroid_index };
+    return { ...datapoint, centroid_index: centroids.indexOf(nearestCentroid) };
   });
 }
 
@@ -123,10 +123,13 @@ function calculate_new_centroids(datapoints, centroids, measure_function) {
   let centroids_changed = false;
 
   const newCentroids = centroids.map( centroid => {
-    const centroidPoints = datapoints.filter(point => point.centroid_index === 1);
+    const centroidPoints = datapoints.filter(point => point.centroid_index === centroids.indexOf(centroid));
+    if (centroidPoints.length === 0) {
+      return centroid;
+    }
     const newCoord = measure_function(centroidPoints);
 
-    if (newCoord !== centroid) {
+    if (newCoord.x !== centroid.x && newCoord.y !== centroid.y) {
       centroids_changed = true;
       return newCoord;
     }
@@ -164,4 +167,20 @@ function get_random_centroids(datapoints, k) {
   }
   
   return centroids;
+}
+
+function kmeans(datapoints, k, measure_func, distance_func) {
+  let centroids = get_random_centroids(datapoints, k);
+  let converged = false;
+
+  let counter = 0;
+  while (!converged && counter < 10000) {
+    datapoints = assign_datapoints_to_centroids(datapoints, centroids, distance_func);
+    const result = calculate_new_centroids(datapoints, centroids, measure_func);
+    centroids = result.newCentroids;
+    converged = !result.centroids_changed;
+    counter++;
+  }
+
+  return {datapoints, centroids};
 }

@@ -11,6 +11,9 @@
     <script src="https://unpkg.com/simple-statistics@7.7.0/dist/simple-statistics.min.js"></script>
     <script src="https://unpkg.com/regression@2.0.1/dist/regression.min.js"></script>
     <script src="https://unpkg.com/@saehrimnir/druidjs"></script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <script src="/kmeans.js"></script>
+    <script src="/index.js"></script>
   </head>
   <body>
     <div class="header">
@@ -19,6 +22,7 @@
         <button class="function_button" onclick="Task_1()">Task 1</button>
         <button class="function_button" onclick="Task_2()">Task 2</button>
         <button class="function_button" onclick="Task_3()">Task 3</button>
+        <button class="function_button" onclick="Task_4()">Task 4</button>
         <button
           class="function_button position_right"
           onclick="toggleColorblindMode()"
@@ -30,7 +34,5 @@
     <div class="content">
       <div id="chart"></div>
     </div>
-    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
-    <script src="/index.js"></script>
   </body>
 </html>
