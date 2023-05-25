@@ -88,7 +88,7 @@ function preprocessData(data) {
   ];
 
   // Create a new array of objects with selected variables
-  const df_scatter = data.map((d) =>
+  let df_scatter = data.map((d) =>
     cols.reduce(
       (acc, col) => ({
         ...acc,
@@ -130,6 +130,19 @@ function preprocessData(data) {
 
   df_scatter.forEach((d) => {
     d.avg_minage = avgMinageByYear[d.year];
+  });
+
+  // replace all release years outside of [mean - 3*std; mean + 3*std] with the mean
+  const years_sum = df_scatter.map(game => game.year).reduce((partialSum, n) => partialSum + n, 0);
+  const years_mean = years_sum / df_scatter.length;
+  const year_std = Math.sqrt(df_scatter.reduce((partialSum, game) => partialSum + Math.pow(game.year - years_mean, 2), 0) / data.length);
+  const year_lower_bound = years_mean - 3 * year_std;
+  const year_upper_bound = years_mean + 3 * year_std;
+  df_scatter = df_scatter.map((game) => {
+    if ((game.year < year_lower_bound) || (game.year > year_upper_bound)) {
+      game.year = years_mean;
+    }
+    return {...game};
   });
 
   // Extract the 'rating' column into a separate Series
@@ -714,7 +727,7 @@ function draw_cluster(data) {
 
   let cluster_data = data.map((game) => ({"x": game.avg_rating, "y": game.num_of_reviews}));
   cluster_data = standardizeData(cluster_data);
-  const result = kmeans(cluster_data, 4, mean, euclid);
+  const result = kmeans(cluster_data, 2, mean, manhattan);
   cluster_data = result.datapoints;
   const centroids = result.centroids;
 
@@ -769,7 +782,6 @@ function draw_cluster(data) {
     .attr('cy', d => yScale(d.y))
     .attr('r', 5)
     .attr('fill', colorCircleFill)
-    .attr("stroke", colorCircleStroke)
     .attr("stroke-width", 1.5)
     .style("fill", function (d, i) { return color(d.centroid_index); })
     // Add hover effect

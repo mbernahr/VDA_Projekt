@@ -165,7 +165,7 @@ function get_random_centroids(datapoints, k) {
     };
     centroids.push(centroid);
   }
-  
+  if (k===2) return [{"x":-0.75, "y": 0.4}, {"x":0.9, "y": -0.4}];
   return centroids;
 }
 
