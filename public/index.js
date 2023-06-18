@@ -175,6 +175,49 @@ function preprocessData(data) {
     //delete d.maxplayers;
   });
 
+  // Pagerank
+  // Build the adjacency matrix for PageRank
+  let N = data.length;
+  let adjacencyMatrix = Array(N).fill().map(() => Array(N).fill(0));
+  let outDegree = Array(N).fill(0);
+
+  data.forEach((d, i) => {
+    if (d.recommendations && d.recommendations.fans_liked) {
+      d.recommendations.fans_liked.forEach((recommendedId) => {
+        let j = data.findIndex((d) => d.id === recommendedId);
+        if (j !== -1) {
+          adjacencyMatrix[i][j] = 1;
+          outDegree[i] += 1;
+        }
+      });
+    }
+  });
+
+  // Initialize PageRank of each node to 1/N
+  let pagerank = Array(N).fill(1/N);
+
+  // Parameters for PageRank
+  let d = 0.85;  // damping factor
+  let iterations = 100;  // number of iterations
+
+  // Calculate PageRank
+  for (let iteration = 0; iteration < iterations; iteration++) {
+    let newPagerank = Array(N).fill((1 - d) / N);  // introduce teleportation factor
+    pagerank.forEach((currentRank, i) => {
+      adjacencyMatrix[i].forEach((edge, j) => {
+        if (edge === 1) {
+          newPagerank[j] += d * currentRank / outDegree[i];
+        }
+      });
+    });
+    pagerank = newPagerank;
+  }
+  console.log("pagerank: ", pagerank)
+  // Add the pagerank to the df_scatter array
+  df_scatter.forEach((d, i) => {
+    d.pagerank = pagerank[i] * 10;
+  });
+  
   // Return the preprocessed data as an array of objects
   console.log("Preprocessed data:", df_scatter)
   return df_scatter;
