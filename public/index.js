@@ -22,6 +22,10 @@ socket.on("boardgames_data", (obj) => {
     draw_lda(preprocessedData);
   } else if (chartType === "cluster") {
     draw_cluster(preprocessedData);
+  } else if (chartType === "graph") {
+    draw_graph(preprocessedData);
+  } else if (chartType === "pagerank") {
+    draw_pagerank(preprocessedData);
   } else {
     console.error("Unknown chart type received: ", chartType);
   }
@@ -85,6 +89,7 @@ function preprocessData(data) {
     "rating",
     "types",
     "title",
+    "recommendations",
   ];
 
   // Create a new array of objects with selected variables
@@ -850,3 +855,36 @@ function draw_cluster(data) {
     .attr("font-size", "16px")
     .text('Number of Reviews');
 }
+
+////////////////////////////////////////////////// Task_5 //////////////////////////////////////////////////
+
+function Task_5() {
+  chartType = "graph"
+  socket.emit("get_boardgames_data")
+}
+
+function draw_graph(data){
+
+}
+
+////////////////////////////////////////////////// Task_6 //////////////////////////////////////////////////
+
+function Task_6() {
+  chartType = "pagerank"
+  socket.emit("get_boardgames_data")
+}
+
+function draw_pagerank(data){
+  
+}
+
+
+
+
+
+
+
+
+
+
+
