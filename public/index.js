@@ -908,6 +908,11 @@ function Task_5() {
 }
 
 function draw_graph(data) {
+  // Set the dimensions and margins for the chart
+  const margin = { top: 50, right: 30, bottom: 30, left: 50 },
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
   // Preprocess data to create nodes and links
   const nodes = data.map(d => ({ id: d.id, title: d.title , rank: d.pagerank}));
   const links = [];
@@ -920,36 +925,27 @@ function draw_graph(data) {
       });
   });
 
-  console.log("nodes: ", nodes)
-  console.log("links: ", links)
-
   // Calculate min and max ranks
   const minRank = d3.min(nodes, d => d.rank);
   const maxRank = d3.max(nodes, d => d.rank);
 
-  console.log("minRank: ", minRank, "maxRank: ", maxRank)
+  console.log("nodes: ", nodes)
+  console.log("links: ", links)
 
-  // Create color scale
+  // Create color and radius scales
   const color = d3.scaleLinear()
   .domain([minRank, maxRank])
   .range(["lightblue", "darkblue"]);
 
-  // Create ForceGraph
-  const chart = ForceGraph({
-      nodes,
-      links,
-      nodeId: d => d.id,
-      nodeColor: d => color(d.rank), 
-      nodeTitle: d => `${d.id}\n${d.title}`,
-      linkStrokeWidth: l => Math.sqrt(l.value),
-      width: 600,
-      height: 600
-  });
+  const radiusScale = d3.scaleSqrt()
+  .domain([minRank, maxRank])
+  .range([2, 20]);
 
-  // Set the dimensions and margins for the chart
-  const margin = { top: 50, right: 30, bottom: 30, left: 50 },
-      width = 960 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
+  // Set up the simulation
+  var simulation = d3.forceSimulation(nodes)
+    .force("link", d3.forceLink(links).id(d => d.id))
+    .force("charge", d3.forceManyBody())
+    .force("center", d3.forceCenter(width / 2, height / 2));
 
   // Create an SVG container and group (g) element, and apply a transformation for the margins
   const svg = d3.select("#chart")
@@ -959,9 +955,88 @@ function draw_graph(data) {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  svg.node().appendChild(chart);
-}
+    var link = svg.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(links)
+      .enter().append("line")
+      .attr("stroke", "lightgrey")  
+      .attr("stroke-width", d => Math.sqrt(d.value));
 
+    // Define tooltip div
+    var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  // Add a circle for each node
+  var node = svg.append("g")
+      .attr("class", "nodes")
+      .selectAll("circle")
+      .data(nodes)
+      .enter().append("circle")
+      .attr("r", d => radiusScale(d.rank))
+      .attr("fill", d => color(d.rank))  
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended))
+      // Add hover effect
+      .on('mouseover', function (event, d) {
+        d3.select(this).transition()
+          .duration('100')
+          .attr("r", d => radiusScale(d.rank) + 7); 
+        div.transition()
+          .duration(100)
+          .style("opacity", 1);
+        div.html("Titel: " + d.title + "<br>Pagerank: " + d.rank)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 15) + "px");
+      })
+      .on('mouseout', function (event, d) {
+        d3.select(this).transition()
+          .duration('200')
+          .attr("r", d => radiusScale(d.rank)); 
+        div.transition()
+          .duration('200')
+          .style("opacity", 0);
+      });
+
+  simulation
+      .nodes(nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(links);
+
+  function ticked() {
+    link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+    node
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+  }
+
+  function dragstarted(d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+
+  function dragended(d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+}
 
 ////////////////////////////////////////////////// Task_6 //////////////////////////////////////////////////
 
