@@ -907,7 +907,7 @@ function Task_5() {
   socket.emit("get_boardgames_data")
 }
 
-function draw_graph(data) {
+function force_graph(data) {
   // Set the dimensions and margins for the chart
   const margin = { top: 50, right: 30, bottom: 30, left: 50 },
         width = 960 - margin.left - margin.right,
@@ -943,7 +943,7 @@ function draw_graph(data) {
 
   // Set up the simulation
   var simulation = d3.forceSimulation(nodes)
-    .force("link", d3.forceLink(links).id(d => d.id))
+    .force("link", d3.forceLink(links).id(d => d.id).distance(100))
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -1036,6 +1036,46 @@ function draw_graph(data) {
     d.fx = null;
     d.fy = null;
   }
+}
+
+function show_checkboxes() {
+  // Sample data for checkboxes
+  const options = [
+    { value: "Option 1" },
+    { value: "Option 2" },
+    { value: "Option 3" }
+  ];
+
+  // Select the checkbox container element
+  const checkboxContainer = d3.select("#checkboxContainer");
+
+  // Bind data to checkboxes
+  const checkboxes = checkboxContainer.selectAll("label")
+    .data(options)
+    .enter()
+    .append("label");
+
+  // Append checkboxes and labels
+  checkboxes.append("input")
+    .attr("type", "checkbox")
+    .attr("name", "option")
+    .attr("value", d => d.value)
+    .on("change", function() {
+      const isChecked = this.checked;
+      const value = this.value;
+      console.log(`Checkbox ${value} is ${isChecked ? "checked" : "unchecked"}.`);
+    });
+
+  checkboxes.append("span")
+    .text(d => d.value);
+}
+
+function draw_graph(data) {
+  clearChart();
+  colorblindMode = false;
+
+  show_checkboxes();
+  force_graph(data);
 }
 
 ////////////////////////////////////////////////// Task_6 //////////////////////////////////////////////////
