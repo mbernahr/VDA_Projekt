@@ -24,8 +24,6 @@ socket.on("boardgames_data", (obj) => {
     draw_cluster(preprocessedData);
   } else if (chartType === "graph") {
     draw_graph(preprocessedData);
-  } else if (chartType === "pagerank") {
-    draw_pagerank(preprocessedData);
   } else {
     console.error("Unknown chart type received: ", chartType);
   }
@@ -34,7 +32,6 @@ socket.on("boardgames_data", (obj) => {
 
 function clearChart() {
   d3.select("#chart svg").remove();
-  //d3.select("#checkboxContainer").remove();
 }
 
 ///////////////////////////////////////////// colorblind Modus /////////////////////////////////////////////
@@ -907,7 +904,7 @@ function draw_cluster(data) {
     .text('Number of Reviews');
 }
 
-////////////////////////////////////////////////// Task_5 //////////////////////////////////////////////////
+////////////////////////////////////////////////// Task_5_and_6 //////////////////////////////////////////////////
 
 function Task_5() {
   chartType = "graph"
@@ -1088,65 +1085,9 @@ function force_graph(data) {
   }
 }
 
-function show_checkboxes(data) {
-  // Sample data for checkboxes
-  const options = [
-    { value: "Option 1" },
-    { value: "Option 2" },
-    { value: "Option 3" }
-  ];
-
-  // Select the checkbox container element
-  const checkboxContainer = d3.select("#checkboxContainer");
-
-  // Bind data to checkboxes
-  const checkboxes = checkboxContainer.selectAll("label")
-    .data(options)
-    .enter()
-    .append("label");
-
-  // Append checkboxes and labels
-  checkboxes.append("input")
-    .attr("type", "checkbox")
-    .attr("name", "option")
-    .attr("value", d => d.value)
-    .on("change", function() {
-      const isChecked = this.checked;
-      const value = this.value;
-      console.log(`Checkbox ${value} is ${isChecked ? "checked" : "unchecked"}.`);
-      force_graph(data);
-    });
-
-  checkboxes.append("span")
-    .text(d => d.value);
-}
-
 function draw_graph(data) {
   clearChart();
   colorblindMode = false;
 
   force_graph(data);
-  //show_checkboxes(data);
 }
-
-////////////////////////////////////////////////// Task_6 //////////////////////////////////////////////////
-
-function Task_6() {
-  chartType = "pagerank"
-  socket.emit("get_boardgames_data")
-}
-
-function draw_pagerank(data){
-  
-}
-
-
-
-
-
-
-
-
-
-
-
