@@ -34,6 +34,7 @@ socket.on("boardgames_data", (obj) => {
 
 function clearChart() {
   d3.select("#chart svg").remove();
+  //d3.select("#checkboxContainer").remove();
 }
 
 ///////////////////////////////////////////// colorblind Modus /////////////////////////////////////////////
@@ -218,6 +219,36 @@ function preprocessData(data) {
   df_scatter.forEach((d, i) => {
     d.pagerank = pagerank[i] * 10;
   });
+
+  // Create a array with the most dominant game category from each game
+  var classCounts = {};
+  for (let game of data) {
+    for (let count of game.types.categories) {
+      if (!classCounts.hasOwnProperty(count.name)) {
+        classCounts[count.name] = 1;
+      } else {
+        classCounts[count.name]++;
+      }
+    }
+  }
+
+  highestOrderedCategories = [];
+  for (let game of data) {
+    let tmp = [];
+    for (let count of game.types.categories) {
+      tmp.push(count.name)
+    }
+    tmp.sort((a, b) => classCounts[b] - classCounts[a]);
+    if (tmp.length > 0) {
+      highestOrderedCategories.push(tmp[0]);
+    }
+  }
+
+  df_scatter.forEach((d, i) => {
+    d.topCategory = highestOrderedCategories[i];
+  })
+
+
   
   // Return the preprocessed data as an array of objects
   console.log("Preprocessed data:", df_scatter)
@@ -514,30 +545,6 @@ function draw_lda(data) {
   colorblindMode = false;
 
   ///////////// preprocess for LDA //////////// 
-  // Create a array with the most dominant game category from each game
-  var classCounts = {};
-  for (let game of data) {
-    for (let count of game.types.categories) {
-      if (!classCounts.hasOwnProperty(count.name)) {
-        classCounts[count.name] = 1;
-      } else {
-        classCounts[count.name]++;
-      }
-    }
-  }
-
-  let highestOrderedCategories = [];
-  for (let game of data) {
-    let tmp = [];
-    for (let count of game.types.categories) {
-      tmp.push(count.name)
-    }
-    tmp.sort((a, b) => classCounts[b] - classCounts[a]);
-    if (tmp.length > 0) {
-      highestOrderedCategories.push(tmp[0]);
-    }
-  }
-  console.log("highestOrderedCategories: ", highestOrderedCategories);
 
   // Create a array with only the numerical data from each game
   var numberData = []
@@ -908,13 +915,14 @@ function Task_5() {
 }
 
 function force_graph(data) {
+  clearChart();
   // Set the dimensions and margins for the chart
   const margin = { top: 50, right: 30, bottom: 30, left: 50 },
         width = 960 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
 
   // Preprocess data to create nodes and links
-  const nodes = data.map(d => ({ id: d.id, title: d.title , rank: d.pagerank}));
+  const nodes = data.map(d => ({ id: d.id, title: d.title , rank: d.pagerank, topCategory: d.topCategory}));
   const links = [];
 
   data.forEach(d => {
@@ -932,10 +940,18 @@ function force_graph(data) {
   console.log("nodes: ", nodes)
   console.log("links: ", links)
 
-  // Create color and radius scales
-  const color = d3.scaleLinear()
-  .domain([minRank, maxRank])
-  .range(["lightblue", "darkblue"]);
+  //// Create color and radius scales
+  //const color = d3.scaleLinear()
+  //.domain([minRank, maxRank])
+  //.range(["lightblue", "darkblue"]);
+
+
+  /////// Add self created array with colors because they are better to disginguish
+  var color = d3.scaleOrdinal()
+    .domain(Array.from(new Set(highestOrderedCategories)))
+    .range(["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896",
+      "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f",
+      "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5", "#6b6ecf", "#b5cf6b"]);
 
   const radiusScale = d3.scaleSqrt()
   .domain([minRank, maxRank])
@@ -975,7 +991,7 @@ function force_graph(data) {
       .data(nodes)
       .enter().append("circle")
       .attr("r", d => radiusScale(d.rank))
-      .attr("fill", d => color(d.rank))  
+      .attr("fill", d => color(d.topCategory))  
       .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
@@ -988,7 +1004,7 @@ function force_graph(data) {
         div.transition()
           .duration(100)
           .style("opacity", 1);
-        div.html("Titel: " + d.title + "<br>Pagerank: " + d.rank)
+        div.html("Titel: " + d.title + "<br>Pagerank: " + d.rank + "<br>Category: " + d.topCategory)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 15) + "px");
       })
@@ -1000,6 +1016,40 @@ function force_graph(data) {
           .duration('200')
           .style("opacity", 0);
       });
+
+  // Add a title to the chart
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", -margin.top * 2)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "21px")
+    .attr("font-weight", "bold")
+    .text("Recommendation Graph: Relationships, Pagerank & Categories");
+
+  // Get unique categories for the legend by using Set
+  let uniqueCategories = Array.from(new Set(highestOrderedCategories));
+
+  // Legend
+  var legend = svg.selectAll(".legend")
+    .data(uniqueCategories)
+    .enter().append("g")
+    .attr("class", "legend")
+    .attr("transform", function (_, i) { return "translate(" + (width + 20) + "," + i * 20 + ")"; });
+
+  // Draw legend colored rectangles
+  legend.append("rect")
+    .attr("x", 0)
+    .attr("width", 18)
+    .attr("height", 18)
+    .style("fill", color);
+
+  // Draw legend text
+  legend.append("text")
+    .attr("x", 24)
+    .attr("y", 9)
+    .attr("dy", ".35em")
+    .style("text-anchor", "start")
+    .text(function (d) { return d; });
 
   simulation
       .nodes(nodes)
@@ -1038,7 +1088,7 @@ function force_graph(data) {
   }
 }
 
-function show_checkboxes() {
+function show_checkboxes(data) {
   // Sample data for checkboxes
   const options = [
     { value: "Option 1" },
@@ -1064,6 +1114,7 @@ function show_checkboxes() {
       const isChecked = this.checked;
       const value = this.value;
       console.log(`Checkbox ${value} is ${isChecked ? "checked" : "unchecked"}.`);
+      force_graph(data);
     });
 
   checkboxes.append("span")
@@ -1074,8 +1125,8 @@ function draw_graph(data) {
   clearChart();
   colorblindMode = false;
 
-  show_checkboxes();
   force_graph(data);
+  //show_checkboxes(data);
 }
 
 ////////////////////////////////////////////////// Task_6 //////////////////////////////////////////////////
